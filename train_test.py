@@ -7,11 +7,11 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
-import tqdm
+from tqdm import tqdm
 
 # parameters parsing
 parser = argparse.ArgumentParser(description='Training parameters for ResNet in CIFAR10')
-parser.add_argument('--a', '--architecture', metaver='ARCH', defalut='resnet20',
+parser.add_argument('--arch', '--a', '--architecture', metaver='ARCH', defalut='resnet20',
                     help='model architecture')
 parser.add_argument('--bs', '--batch-size', metaver='N', defalut='128', type=int,
                     help='batch size for training')
@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
 
     # Initialize the network
-    ResNet = networks.__dict__[args.architecture]
+    ResNet = networks.__dict__[args.arch]
     ResNet.cuda()
 
     # Initialize train/test set
@@ -56,22 +56,27 @@ def main():
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.milestones, gamma=args.lr_decay)
 
     # Initialize statistics for training
-    epoch_time = utils.AverageMeter()
-    train_loss = utils.AverageMeter()
-    test_loss = utils.AverageMeter()
+    # epoch_time = []
+    # loading_time = []
+    train_loss = []
+    train_acc = []
+    test_loss = []
+    test_acc = []
 
     # Train-test
-    for epoch in tqdm.tgrange:
-        train()
-        test()
+    for epoch in tqdm(range(args.epochs)):
+        train_loss, train_acc = train(ResNet, train_loader, criterion, optimizer)
+        test_loss, test_acc = test(ResNet, test_loader, criterion)
+
+    # Plots
 
 
-def train():
-    return
+def train(ResNet, train_loader, criterion, optimizer):
+    return loss, acc
 
 
-def test():
-    return
+def test(ResNet, test_loader, criterion):
+    return loss, acc
 
 
 if __name__ == '__main__':
