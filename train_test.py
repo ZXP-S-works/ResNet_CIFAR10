@@ -9,7 +9,7 @@ import torch.optim as optim
 import torch.nn as nn
 from tqdm import tqdm
 import time
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from parameters import *
 
 
@@ -20,11 +20,11 @@ def main():
 
     # Initialize train/test set
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet statistics
-    train_transform = transforms.Compose([transforms.ToTensor(),
-                                          normalize,
-                                          transforms.RandomCrop(32, padding=4, padding_mode='edge'),
+    train_transform = transforms.Compose([transforms.RandomCrop(32, padding=4, padding_mode='edge'),
                                           transforms.RandomHorizontalFlip(),
-                                          transforms.RandomRotation(15)])
+                                          transforms.RandomRotation(15),
+                                          transforms.ToTensor(),
+                                          normalize])
     test_transform = transforms.Compose([transforms.ToTensor(),
                                          normalize])
     train_set = torchvision.datasets.CIFAR10(root='./CIFAR10', train=True, download=True, transform=train_transform)
@@ -44,9 +44,11 @@ def main():
     train_hist = []
 
     # Train-test
-    for epoch in tqdm(range(args.epochs)):
+    print('Learning rate: {}'.format(args.lr))
+    for epoch in range(args.epochs):
         train_loss, train_acc = train(epoch, ResNet, train_loader, criterion, optimizer)
         scheduler.step()
+        print('Learning rate: {}'.format(optimizer.param_groups[0]['lr']))
         test_loss, test_acc = test(ResNet, test_loader, criterion)
         train_hist.append([train_loss, train_acc, test_loss, test_acc])
 
@@ -76,7 +78,7 @@ def train(epoch, model, train_loader, criterion, optimizer):
     model.train()
 
     tic = time.time()
-    for i, img, labels in enumerate(train_loader):
+    for i, (img, labels) in enumerate(train_loader):
         # data loading time
         data_time.update(time.time() - tic)
 
@@ -102,8 +104,8 @@ def train(epoch, model, train_loader, criterion, optimizer):
         tic = time.time()
 
     # Print statistics
-    print('Epoch: [{0}]\tLoading Time: {1.3f}\tEpoch Time: {2.3f}\tLoss: {3.4f}\tAccuracy@1: {4.3f}'
-          .format(epoch, data_time.avg, batch_time.avg, losses.avg, top1.avg))
+    print('Epoch[{0}]\tLoading Time: {1:.3f}\tEpoch Time: {2:.3f}\tLoss: {3:.4f}\tAccuracy@1: {4:.3f}'
+          .format(epoch+1, data_time.sum, batch_time.sum, losses.avg, top1.avg))
 
     return losses.avg, top1.avg
 

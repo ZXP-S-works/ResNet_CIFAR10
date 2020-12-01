@@ -69,7 +69,7 @@ class BaseBlock(nn.Module):
         # NN part
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
         # Residual/shortcut part
@@ -80,14 +80,14 @@ class BaseBlock(nn.Module):
                 self.shortcut = CustomLayer(lambda x:
                                             F.pad(x[:, :, ::2, ::2],
                                                   [0, 0, 0, 0, out_channels // 4, out_channels // 4]))
-            if option == 'B':  # a project of x for increasing dimension, which is implemented by 1x1 conv, slightly
+            elif option == 'B':  # a project of x for increasing dimension, which is implemented by 1x1 conv, slightly
                 # different from the paper
                 self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False)
             else:
                 raise NotImplemented
 
-    def foward(self, x):
-        out = F.relu(self.b1(self.conv1(x)))
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         out += self.shortcut(x)
         out = F.relu(out)
