@@ -12,6 +12,7 @@ import time
 import matplotlib.pyplot as plt
 from parameters import *
 import os
+import visualization
 
 
 def main():
@@ -36,7 +37,7 @@ def main():
     # Initialize torch gradient setup
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(ResNet.parameters(), lr=args.lr, weight_decay=args.wd)
-    milestones = np.linspace(0, args.epochs, args.milestones+2)[1:-1].astype(int).tolist()
+    milestones = np.linspace(0, args.epochs, args.milestones + 2)[1:-1].astype(int).tolist()
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=args.lr_decay)
 
     # Initialize statistics for training
@@ -54,30 +55,16 @@ def main():
     # statistics and save checkpoint
     train_hist = np.array(train_hist)
     for i in range(100):
-        save_dir = './Results/' + args.arch + '_' + str(i+1)
+        save_dir = './Results/' + args.arch + '_' + str(i + 1)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
             break
-    utils.save_checkpoint({'state_dict': ResNet.state_dict(),
-                           'train_hist': train_hist},
-                          filename=os.path.join(save_dir, '/model.th'))
+    torch.save({'state_dict': ResNet.state_dict(),
+                'train_hist': train_hist},
+               os.path.join(save_dir, 'model.th'))
 
-    # Plots
-    fig, (ax1, ax2) = plt.subplots(2)
-    ax1.plot(train_hist[1, 3])
-    # plt.xlim(left=0)
-    # plt.ylim(bottom=0)
-    fig.title('Learning curve', fontsize=24)
-    ax1.xlabel('Epochs', fontsize=16)
-    ax1.ylabel('Top1 accuracy (%)', fontsize=16)
-    ax1.legend(['Train acc', 'Test acc'], loc='upper right', fontsize=14)
-    ax2.plot(train_hist[1, 3])
-    # plt.xlim(left=0)
-    # plt.ylim(bottom=0)
-    ax2.xlabel('Epochs', fontsize=16)
-    ax2.ylabel('Loss (NNL)', fontsize=16)
-    ax2.legend(['Train loss', 'Test loss'], loc='upper right', fontsize=14)
-    plt.show()
+    # visualization
+    visualization.visualization(save_dir)
 
 
 def train(epoch, model, train_loader, criterion, optimizer):
@@ -124,7 +111,7 @@ def train(epoch, model, train_loader, criterion, optimizer):
           'Loading Time: {3:.2f}\t'
           'Epoch Time: {4:.2f}\t'
           'Learning Rate: {5:.2e}'
-          .format(epoch+1,
+          .format(epoch + 1,
                   top1.avg,
                   losses.avg,
                   data_time.sum,

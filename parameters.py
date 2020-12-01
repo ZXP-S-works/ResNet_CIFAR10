@@ -15,11 +15,11 @@ parser.add_argument('--lr', '--learning-rate', metavar='R', default=0.01, type=f
                     help='learning rate for the SGD')
 parser.add_argument('--wd', '--weight-decay', metavar='R', default=1e-4, type=float,
                     help='L2 penalty for parameters regularization')
-parser.add_argument('--milestones', metavar='N', default=5, type=int,
+parser.add_argument('--milestones', metavar='N', default=3, type=int,
                     help='number of milestones, milestones will be evenly set')
-parser.add_argument('--lr-decay', metavar='R', default=0.33, type=float,
+parser.add_argument('--lr-decay', metavar='R', default=0.1, type=float,
                     help='decay on learning rate when a milestone is reached')
-parser.add_argument('--epochs', metavar='N', default=5, type=int,
+parser.add_argument('--epochs', metavar='N', default=100, type=int,
                     help='number of epochs for training')
 
 args = parser.parse_args()
