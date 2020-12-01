@@ -23,9 +23,9 @@ class ResNets(nn.Module):
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.input_channels = 16
-        self.block1 = self._create_block(block, 16, block_shape[0], stride=1)
-        self.block2 = self._create_block(block, 32, block_shape[1], stride=2)
-        self.block3 = self._create_block(block, 64, block_shape[2], stride=2)
+        self.block1 = self._create_block(block, 16, block_shape[0], first_stride=1)
+        self.block2 = self._create_block(block, 32, block_shape[1], first_stride=2)
+        self.block3 = self._create_block(block, 64, block_shape[2], first_stride=2)
         self.linear = nn.Linear(64, num_classes)
         self.apply(_weight_init)
 
