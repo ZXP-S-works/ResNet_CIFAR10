@@ -1,14 +1,14 @@
 import torch
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, filename='checkpoint.pth.tar'):
     """
     Save the training model
     """
     torch.save(state, filename)
 
 
-class AverageMeter(object):  # ZXP ???
+class AverageMeter(object):
     """Computes and stores the average and current value"""
 
     def __init__(self):

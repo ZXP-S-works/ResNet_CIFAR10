@@ -11,6 +11,7 @@ from tqdm import tqdm
 import time
 import matplotlib.pyplot as plt
 from parameters import *
+import os
 
 
 def main():
@@ -35,7 +36,7 @@ def main():
     # Initialize torch gradient setup
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(ResNet.parameters(), lr=args.lr, weight_decay=args.wd)
-    milestones = np.linspace(0, args.epochs, args.milestones+2)[1:-1]
+    milestones = np.linspace(0, args.epochs, args.milestones+2)[1:-1].astype(int).tolist()
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=args.lr_decay)
 
     # Initialize statistics for training
@@ -44,25 +45,38 @@ def main():
     train_hist = []
 
     # Train-test
-    print('Learning rate: {}'.format(args.lr))
     for epoch in range(args.epochs):
         train_loss, train_acc = train(epoch, ResNet, train_loader, criterion, optimizer)
         scheduler.step()
-        print('Learning rate: {}'.format(optimizer.param_groups[0]['lr']))
         test_loss, test_acc = test(ResNet, test_loader, criterion)
         train_hist.append([train_loss, train_acc, test_loss, test_acc])
 
+    # statistics and save checkpoint
     train_hist = np.array(train_hist)
+    for i in range(100):
+        save_dir = './Results/' + args.arch + '_' + str(i+1)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            break
+    utils.save_checkpoint({'state_dict': ResNet.state_dict(),
+                           'train_hist': train_hist},
+                          filename=os.path.join(save_dir, '/model.th'))
 
     # Plots
-    plt.figure(figsize=(12, 8))
-    plt.plot(train_hist)
-    plt.xlim(left=0)
-    plt.ylim(bottom=0)
-    plt.title('Learning curve', fontsize=24)
-    plt.xlabel('Epochs', fontsize=16)
-    plt.ylabel('NLL', fontsize=16)
-    plt.legend(loc='upper right', fontsize=14)
+    fig, (ax1, ax2) = plt.subplots(2)
+    ax1.plot(train_hist[1, 3])
+    # plt.xlim(left=0)
+    # plt.ylim(bottom=0)
+    fig.title('Learning curve', fontsize=24)
+    ax1.xlabel('Epochs', fontsize=16)
+    ax1.ylabel('Top1 accuracy (%)', fontsize=16)
+    ax1.legend(['Train acc', 'Test acc'], loc='upper right', fontsize=14)
+    ax2.plot(train_hist[1, 3])
+    # plt.xlim(left=0)
+    # plt.ylim(bottom=0)
+    ax2.xlabel('Epochs', fontsize=16)
+    ax2.ylabel('Loss (NNL)', fontsize=16)
+    ax2.legend(['Train loss', 'Test loss'], loc='upper right', fontsize=14)
     plt.show()
 
 
@@ -104,14 +118,69 @@ def train(epoch, model, train_loader, criterion, optimizer):
         tic = time.time()
 
     # Print statistics
-    print('Epoch[{0}]\tLoading Time: {1:.3f}\tEpoch Time: {2:.3f}\tLoss: {3:.4f}\tAccuracy@1: {4:.3f}'
-          .format(epoch+1, data_time.sum, batch_time.sum, losses.avg, top1.avg))
+    print('Epoch[{0}]\tTrain:\t'
+          'Accuracy@1: {1:.2f}\t'
+          'Loss: {2:.4f}\t'
+          'Loading Time: {3:.2f}\t'
+          'Epoch Time: {4:.2f}\t'
+          'Learning Rate: {5:.2e}'
+          .format(epoch+1,
+                  top1.avg,
+                  losses.avg,
+                  data_time.sum,
+                  batch_time.sum,
+                  optimizer.param_groups[0]['lr']))
 
     return losses.avg, top1.avg
 
 
 def test(model, test_loader, criterion):
-    return 0, 0
+    """
+        One test epoch
+    """
+    # initialize parameters for statistics
+    batch_time = utils.AverageMeter()
+    data_time = utils.AverageMeter()
+    losses = utils.AverageMeter()
+    top1 = utils.AverageMeter()
+    model.eval()
+
+    tic = time.time()
+    with torch.no_grad():
+        for i, (img, labels) in enumerate(test_loader):
+            # data loading time
+            data_time.update(time.time() - tic)
+
+            # to cuda if possible else cpo
+            img = img.to(device)
+            labels = labels.to(device)
+
+            # back propagation
+            output = model(img)
+            loss = criterion(output, labels)
+
+            # statistics of a mini-batch
+            loss = loss.cpu().item()
+            output = output.cpu()
+            labels = labels.cpu()
+            precision1 = utils.accuracy(output, labels)[0]
+            losses.update(loss)
+            top1.update(precision1, labels.shape[0])
+            batch_time.update(time.time() - tic)
+            tic = time.time()
+
+    # Print statistics
+    print('\t\t\tTest:\t'
+          'Accuracy@1: {0:.2f}\t'
+          'Loss: {1:.4f}\t'
+          'Loading Time: {2:.2f}\t'
+          'Epoch Time: {3:.2f}'
+          .format(top1.avg,
+                  losses.avg,
+                  data_time.sum,
+                  batch_time.sum))
+
+    return losses.avg, top1.avg
 
 
 if __name__ == '__main__':
