@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-__all__ = ['ResNets', 'resnet20', 'resnet34', 'resnet74', 'resnet146']
+__all__ = ['ResNets', 'resnet20', 'resnet34', 'resnet74', 'resnet146', 'plain20', 'plain34', 'plain74', 'plain146']
 
 
 # Tensor shapes:
@@ -18,8 +18,9 @@ class ResNets(nn.Module):
     [2] https://github.com/akamaster/pytorch_resnet_cifar10
     """
 
-    def __init__(self, block, block_shape, num_classes=10):
+    def __init__(self, block, block_shape, num_classes=10, option='A'):
         super(ResNets, self).__init__()
+        self.option = option
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.input_channels = 16
@@ -33,7 +34,7 @@ class ResNets(nn.Module):
         strides = [first_stride] + [1] * (block_shape - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.input_channels, channels, stride))
+            layers.append(block(self.input_channels, channels, stride, self.option))
             self.input_channels = channels
 
         return nn.Sequential(*layers)
@@ -64,7 +65,7 @@ class BaseBlock(nn.Module):
         # self.in_channels = in_channels
         # self.out_channels = out_channels
         # self.stride = stride
-        # self.option = option
+        self.option = option
 
         # NN part
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -76,20 +77,23 @@ class BaseBlock(nn.Module):
         if stride == 1 and in_channels == out_channels:  # identical dimension with identity mapping
             self.shortcut = nn.Sequential()
         else:  # when dimension mismatch, there are option A and B in paper [1]
-            if option == 'A':  # zero padding for increasing dimension
+            if self.option == 'A':  # zero padding for increasing dimension
                 self.shortcut = CustomLayer(lambda x:
                                             F.pad(x[:, :, ::2, ::2],
                                                   [0, 0, 0, 0, out_channels // 4, out_channels // 4]))
-            elif option == 'B':  # a project of x for increasing dimension, which is implemented by 1x1 conv, slightly
+            elif self.option == 'B':  # a project of x for increasing dimension, which is implemented by 1x1 conv, slightly
                 # different from the paper
                 self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False)
+            elif self.option == 'plain':  # plain network
+                self.shortcut = None
             else:
                 raise NotImplemented
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
+        if self.option != 'plain':  # option A, B
+            out += self.shortcut(x)
         out = F.relu(out)
         return out
 
@@ -117,3 +121,19 @@ def resnet74():
 
 def resnet146():
     return ResNets(BaseBlock, [24, 24, 24])
+
+
+def plain20():
+    return ResNets(BaseBlock, [3, 3, 3], option='plain')
+
+
+def plain34():
+    return ResNets(BaseBlock, [6, 6, 6], option='plain')
+
+
+def plain74():
+    return ResNets(BaseBlock, [12, 12, 12], option='plain')
+
+
+def plain146():
+    return ResNets(BaseBlock, [24, 24, 24], option='plain')
