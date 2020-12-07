@@ -13,12 +13,14 @@ import matplotlib.pyplot as plt
 from parameters import *
 import os
 import visualization
+from torchsummary import summary
 
 
 def main():
     # Initialize the network
     ResNet = networks.__dict__[args.arch]().to(device)
     print(ResNet)
+    summary(ResNet, input_size=(3, 32, 32))
 
     # Initialize train/test set
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet statistics
@@ -83,7 +85,7 @@ def train(epoch, model, train_loader, criterion, optimizer):
         # data loading time
         data_time.update(time.time() - tic)
 
-        # to cuda if possible else cpo
+        # to cuda if possible else cpu
         img = img.to(device)
         labels = labels.to(device)
 
@@ -138,11 +140,11 @@ def test(model, test_loader, criterion):
             # data loading time
             data_time.update(time.time() - tic)
 
-            # to cuda if possible else cpo
+            # to cuda if possible else cpu
             img = img.to(device)
             labels = labels.to(device)
 
-            # back propagation
+            # forward propagation
             output = model(img)
             loss = criterion(output, labels)
 

@@ -23,6 +23,7 @@ class ResNets(nn.Module):
         self.option = option
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
+        self.relu = nn.ReLU()
         self.input_channels = 16
         self.block1 = self._create_block(block, 16, block_shape[0], first_stride=1)
         self.block2 = self._create_block(block, 32, block_shape[1], first_stride=2)
@@ -40,7 +41,7 @@ class ResNets(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.relu(self.bn1(self.conv1(x)))
         out = self.block1(out)
         out = self.block2(out)
         out = self.block3(out)
@@ -70,31 +71,36 @@ class BaseBlock(nn.Module):
         # NN part
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
+        self.relu2 = nn.ReLU()
 
         # Residual/shortcut part
-        if stride == 1 and in_channels == out_channels:  # identical dimension with identity mapping
+        if stride == 1 and in_channels == out_channels and self.option != 'C':  # identical dimension, identity mapping
             self.shortcut = nn.Sequential()
         else:  # when dimension mismatch, there are option A and B in paper [1]
             if self.option == 'A':  # zero padding for increasing dimension
                 self.shortcut = CustomLayer(lambda x:
-                                            F.pad(x[:, :, ::2, ::2],
+                                            F.pad(x[:, :, ::stride, ::stride],
                                                   [0, 0, 0, 0, out_channels // 4, out_channels // 4]))
-            elif self.option == 'B':  # a project of x for increasing dimension, which is implemented by 1x1 conv, slightly
-                # different from the paper
+            elif self.option == 'B' or self.option == 'C':  # a project of x for increasing dimension,
+                                                            # which is implemented by 1x1 conv
                 self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False)
+            elif self.option == 'D':  # increase tensor chennels by copy
+                self.shortcut = CustomLayer(lambda x:
+                                            x.repeat_interleave(repeats=int(out_channels/in_channels), dim=1))
             elif self.option == 'plain':  # plain network
                 self.shortcut = None
             else:
                 raise NotImplemented
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.relu1(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         if self.option != 'plain':  # option A, B
             out += self.shortcut(x)
-        out = F.relu(out)
+        out = self.relu2(out)
         return out
 
 
