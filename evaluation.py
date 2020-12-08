@@ -27,7 +27,7 @@ def calcu_layer_responses(directory):
     activation = defaultdict(lambda : 0)
     def get_activation_std(name):
         def hook(model, input, output):
-            activation[name] += output.data.std(dim=1).mean()  # there may be some bugs
+            activation[name] += output.data.std(dim=1).mean().item()  # there may be some bugs
             # print(output.data.shape)
         return hook
 

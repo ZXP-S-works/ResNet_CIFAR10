@@ -47,12 +47,25 @@ def main():
     # loading_time = []
     train_hist = []
 
+    # recorde gradient norm
+    if args.gn:
+        gradient_recorder = utils.GradientNorm(ResNet)
+    else:
+        gradient_recorder = None
+
     # Train-test
     for epoch in range(args.epochs):
-        train_loss, train_acc = train(epoch, ResNet, train_loader, criterion, optimizer)
+        train_loss, train_acc = train(epoch, ResNet, train_loader, criterion, optimizer, gradient_recorder)
         scheduler.step()
         test_loss, test_acc = test(ResNet, test_loader, criterion)
         train_hist.append([train_loss, train_acc, test_loss, test_acc])
+
+    # recorde gradient norm
+    if args.gn:
+        gradient_norm_hist = gradient_recorder.get_graidnet_norm_hist()
+        gradient_norm_hist = np.array(gradient_norm_hist)/len(train_loader)
+    else:
+        gradient_norm_hist = None
 
     # statistics and save checkpoint
     train_hist = np.array(train_hist)
@@ -62,14 +75,17 @@ def main():
             os.makedirs(save_dir)
             break
     torch.save({'state_dict': ResNet.state_dict(),
-                'train_hist': train_hist},
+                'train_hist': train_hist,
+                'gradient_hist': gradient_norm_hist},
                os.path.join(save_dir, 'model.th'))
+
+    print(gradient_norm_hist)
 
     # visualization
     visualization.visualization(save_dir)
 
 
-def train(epoch, model, train_loader, criterion, optimizer):
+def train(epoch, model, train_loader, criterion, optimizer, gradient_recorder=None):
     """
     One train epoch
     """
@@ -96,8 +112,12 @@ def train(epoch, model, train_loader, criterion, optimizer):
         loss.backward()
         optimizer.step()
 
+        # recorde gradient norm
+        if args.gn:
+            gradient_recorder.calcu_gradient_norm()
+
         # statistics of a mini-batch SGD
-        loss = loss.cpu().item()
+        loss = loss.item()
         output = output.cpu()
         labels = labels.cpu()
         precision1 = utils.accuracy(output, labels)[0]
@@ -106,14 +126,18 @@ def train(epoch, model, train_loader, criterion, optimizer):
         batch_time.update(time.time() - tic)
         tic = time.time()
 
+    # recorde gradient norm
+    if args.gn:
+        gradient_recorder.update_hist()
+
     # Print statistics
-    print('Epoch[{0}]\tTrain:\t'
-          'Accuracy@1: {1:.2f}\t'
-          'Loss: {2:.4f}\t'
-          'Loading Time: {3:.2f}\t'
-          'Epoch Time: {4:.2f}\t'
-          'Learning Rate: {5:.2e}'
-          .format(epoch + 1,
+    print('Epoch[{}/{}]\tTrain:\t'
+          'Accuracy@1: {:.2f}\t'
+          'Loss: {:.4f}\t'
+          'Loading Time: {:.2f}\t'
+          'Epoch Time: {:.2f}\t'
+          'Learning Rate: {:.2e}'
+          .format(epoch + 1, args.epochs,
                   top1.avg,
                   losses.avg,
                   data_time.sum,
@@ -125,7 +149,7 @@ def train(epoch, model, train_loader, criterion, optimizer):
 
 def test(model, test_loader, criterion):
     """
-        One test epoch
+    One test epoch
     """
     # initialize parameters for statistics
     batch_time = utils.AverageMeter()
@@ -159,10 +183,10 @@ def test(model, test_loader, criterion):
             tic = time.time()
 
     # Print statistics
-    print('\t\t\tTest:\t'
-          'Accuracy@1: {0:.2f}\t'
-          'Loss: {1:.4f}\t'
-          'Loading Time: {2:.2f}\t'
+    print('\t\tTest:\t '
+          'Accuracy@1: {0:.2f}\t '
+          'Loss: {1:.4f}\t '
+          'Loading Time: {2:.2f}\t '
           'Epoch Time: {3:.2f}'
           .format(top1.avg,
                   losses.avg,

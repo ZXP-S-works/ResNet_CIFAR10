@@ -21,6 +21,8 @@ parser.add_argument('--lr-decay', metavar='R', default=0.1, type=float,
                     help='decay on learning rate when a milestone is reached')
 parser.add_argument('--epochs', metavar='N', default=100, type=int,
                     help='number of epochs for training')
+parser.add_argument('--gn', '--gradient-norm', metavar='B', default=False, type=bool,
+                    help='whether record gradient norm during train or not')
 
 args = parser.parse_args()
 
