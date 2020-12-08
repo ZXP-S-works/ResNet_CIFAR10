@@ -19,7 +19,10 @@ import evaluation
 
 def main():
     # Initialize the network
-    ResNet = networks.__dict__[args.arch]().to(device)
+    if args.option == 'default':
+        ResNet = networks.__dict__[args.arch]('A').to(device)
+    else:
+        ResNet = networks.__dict__[args.arch](args.option).to(device)
     print(ResNet)
     summary(ResNet, input_size=(3, 32, 32))
 
@@ -79,7 +82,10 @@ def main():
     #         os.makedirs(save_dir)
     #         break
 
-    save_dir = './Results/' + args.arch
+    if args.option == 'defalut':
+        save_dir = './Results/' + args.arch
+    else:
+        save_dir = './Results/' + args.arch + '_' + args.option
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 

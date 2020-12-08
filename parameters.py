@@ -5,7 +5,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # parameters parsing
 parser = argparse.ArgumentParser(description='Training parameters for ResNet in CIFAR10')
-parser.add_argument('--arch', '--a', '--architecture', metavar='ARCH', default='resnet20',
+parser.add_argument('--arch', '--a', '--architecture', metavar='ARCH', default='resnet34',
                     help='model architecture')
 parser.add_argument('--bs', '--batch-size', metavar='N', default=256, type=int,
                     help='batch size for training')
@@ -23,8 +23,11 @@ parser.add_argument('--epochs', metavar='N', default=100, type=int,
                     help='number of epochs for training')
 parser.add_argument('--gn', '--gradient-norm', metavar='B', default=False, type=bool,
                     help='whether record gradient norm during train or not')
+parser.add_argument('--option', metavar='option', default='defalut', type=str, choices=['defalut', 'A', 'B', 'C', 'D'],
+                    help='resudual block shotcut option')
 
 args = parser.parse_args()
+
 
 # Print all parameters
 var_args = vars(args)

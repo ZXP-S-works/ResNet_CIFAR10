@@ -113,20 +113,20 @@ class CustomLayer(nn.Module):
         return self.lambd(x)
 
 
-def resnet20():
-    return ResNets(BaseBlock, [3, 3, 3])
+def resnet20(option):
+    return ResNets(BaseBlock, [3, 3, 3], option=option)
 
 
-def resnet34():
-    return ResNets(BaseBlock, [6, 6, 6])
+def resnet34(option):
+    return ResNets(BaseBlock, [6, 6, 6], option=option)
 
 
-def resnet74():
-    return ResNets(BaseBlock, [12, 12, 12])
+def resnet74(option):
+    return ResNets(BaseBlock, [12, 12, 12], option=option)
 
 
-def resnet146():
-    return ResNets(BaseBlock, [24, 24, 24])
+def resnet146(option):
+    return ResNets(BaseBlock, [24, 24, 24], option=option)
 
 
 def plain20():
