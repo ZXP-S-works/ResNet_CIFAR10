@@ -15,13 +15,14 @@ test_set = torchvision.datasets.CIFAR10(root='./CIFAR10', train=False, download=
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=512, shuffle=False, num_workers=4)
 
 
-def calcu_layer_responses(directory):
+def calcu_layer_responses(directory, model):
     # Loading
-    model_dict = torch.load(directory + '/model.th')
-    state_dict = model_dict['state_dict']
-    arch = directory.split('/')[-1].split('_')[0]
-    model = networks.__dict__[arch]().to(device)
-    model.load_state_dict(state_dict)
+    if model == None:
+        model_dict = torch.load(directory + '/model.th')
+        state_dict = model_dict['state_dict']
+        arch = directory.split('/')[-1].split('_')[0]
+        model = networks.__dict__[arch]().to(device)
+        model.load_state_dict(state_dict)
 
     # hook for getting activation std
     activation = defaultdict(lambda : 0)
@@ -46,6 +47,8 @@ def calcu_layer_responses(directory):
 
         for item in activation:
             activation[item] /= len(test_loader)
+
+        activation = dict(activation.items())
         print(activation)
 
     return activation

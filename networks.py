@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-__all__ = ['ResNets', 'resnet20', 'resnet34', 'resnet74', 'resnet146', 'plain20', 'plain34', 'plain74', 'plain146']
+__all__ = ['resnet20', 'resnet34', 'resnet74', 'resnet146', 'plain20', 'plain34', 'plain74', 'plain146']
 
 
 # Tensor shapes:

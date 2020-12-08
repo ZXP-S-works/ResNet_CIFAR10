@@ -14,6 +14,7 @@ from parameters import *
 import os
 import visualization
 from torchsummary import summary
+import evaluation
 
 
 def main():
@@ -54,11 +55,14 @@ def main():
         gradient_recorder = None
 
     # Train-test
+    tic = time.time()
     for epoch in range(args.epochs):
         train_loss, train_acc = train(epoch, ResNet, train_loader, criterion, optimizer, gradient_recorder)
         scheduler.step()
         test_loss, test_acc = test(ResNet, test_loader, criterion)
         train_hist.append([train_loss, train_acc, test_loss, test_acc])
+    toc = time.time()
+    print('Total traning time: {:.2f}s'.format(toc - tic))
 
     # recorde gradient norm
     if args.gn:
@@ -69,17 +73,23 @@ def main():
 
     # statistics and save checkpoint
     train_hist = np.array(train_hist)
-    for i in range(100):
-        save_dir = './Results/' + args.arch + '_' + str(i + 1)
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-            break
+    # for i in range(100):
+    #     save_dir = './Results/' + args.arch + '_' + str(i + 1)
+    #     if not os.path.exists(save_dir):
+    #         os.makedirs(save_dir)
+    #         break
+
+    save_dir = './Results/' + args.arch
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    activation = evaluation.calcu_layer_responses(None, ResNet)
     torch.save({'state_dict': ResNet.state_dict(),
                 'train_hist': train_hist,
-                'gradient_hist': gradient_norm_hist},
+                'gradient_hist': gradient_norm_hist,
+                'activation': activation},
                os.path.join(save_dir, 'model.th'))
 
-    print(gradient_norm_hist)
 
     # visualization
     visualization.visualization(save_dir)

@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import networks
 
 
 def visualization(directory):
@@ -23,31 +24,28 @@ def visualization(directory):
     ax2.legend(['Train loss', 'Test loss'], loc='upper right')
     ax2.grid()
     plt.savefig(directory + '/learning_curve.png', bbox_inches='tight')
-    plt.show()
+    # plt.show()
 
 
-def degradation(directory1, directory2, layers):
+def degradation():
     # Loading
-    model_dict1 = torch.load(directory1 + '/model.th')
-    train_hist1 = model_dict1['train_hist'].T
-    model_dict2 = torch.load(directory2 + '/model.th')
-    train_hist2 = model_dict2['train_hist'].T
+    all_train_hist = {}
+    plain_nets = sorted(arch for arch in resnet.__dict__ if name.startswith('plain'))
+    for arch in plain_nets:
+        all_train_hist[arch] = torch.load('./Results/' + str(arch) + '/model.th')['train_hist'].T
 
     # Plots
-    fig, (ax1, ax2) = plt.subplots(2, sharex=True, gridspec_kw={'hspace': 0})
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, gridspec_kw={'hspace': 0})
     fig.suptitle('Learning curve')
-    ax1.plot(train_hist[1, :])
-    ax1.plot(train_hist[3, :])
+    for arch in plain_nets:
+        ax1.plot(train_hist[1, :], label=arch + ' train acc')
+        ax2.plot(train_hist[3, :], label=arch + ' test acc')
     ax1.set(ylabel='Top1 accuracy (%)')
-    ax1.legend(['Train acc', 'Test acc'], loc='lower right')
-    ax1.grid()
-    ax2.plot(train_hist[0, :])
-    ax2.plot(train_hist[2, :])
-    ax2.set(xlabel='Epochs', ylabel='Loss (NNL)')
-    ax2.legend(['Train loss', 'Test loss'], loc='upper right')
-    ax2.grid()
-    plt.savefig(directory + '/learning_curve.png', bbox_inches='tight')
+    ax1.set(xlabel='epochs')
+    ax2.set(xlabel='epochs')
+    plt.savefig('./Results/degradation', bbox_inches='tight')
     plt.show()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Visualization and statistics of the trained ResNet')
