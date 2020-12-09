@@ -146,16 +146,21 @@ def plot_layer_gradient():
     all_gradient_hist = {}
     all_models = ['resnet34', 'plain34']
     for models in all_models:
-        all_gradient_hist[option] = torch.load('./Results/' + str(models) + '/model.th')['gradient_hist']
+        all_gradient_hist[models] = torch.load('./Results/' + str(models) + '/model.th')['gradient_hist']
+        all_gradient_hist[models] = np.array(all_gradient_hist[models])
 
     # to panda data frame
     epochs = range(1, len(all_gradient_hist[all_models[0]])+1)
-    df1 = pd.DataFrame(list(zip(all_gradient_hist[all_models[0]], epochs)), columns=['Epoch', 'Gradient Norm'])
-    df2 = pd.DataFrame(list(zip(all_gradient_hist[all_models[1]], epochs)), columns=['Epoch', 'Gradient Norm'])
+    epochs = np.repeat(epochs, len(all_gradient_hist[all_models[0]][0]))
+
+    df1 = pd.DataFrame(list(zip(epochs, all_gradient_hist[all_models[0]].reshape(-1))), columns=['Epoch', 'Gradient Norm'])
+    df2 = pd.DataFrame(list(zip(epochs, all_gradient_hist[all_models[1]].reshape(-1))), columns=['Epoch', 'Gradient Norm'])
 
     # Plots
-    fig1, axe1 = joypy.joyplot(df1, by="Epoch", column="Gradient Norm", figsize=(5, 8))
-    fig2, axe2 = joypy.joyplot(df2, by="Epoch", column="Gradient Norm", figsize=(5, 8))
+    fig1, axe1 = joypy.joyplot(df1, by="Epoch", column="Gradient Norm", fade=True,
+                       title=all_models[0] + ' gradient norm', figsize=(5, 8))
+    fig2, axe2 = joypy.joyplot(df2, by="Epoch", column="Gradient Norm", fade=True,
+                       title=all_models[1] + ' gradient norm', figsize=(5, 8))
 
     # fig, ax = plt.subplots(1)
     # fig.suptitle('Learning curve')
@@ -166,8 +171,8 @@ def plot_layer_gradient():
     # ax.set(ylabel='Top1 accuracy (%)')
     # ax.set(xlabel='epochs')
 
-    plt1.savefig('./Results/' + all_models[0] + 'layer_gradient', bbox_inches='tight')
-    plt2.savefig('./Results/' + all_models[1] + 'layer_gradient', bbox_inches='tight')
+    fig1.savefig('./Results/' + all_models[0] + 'layer_gradient', bbox_inches='tight')
+    fig2.savefig('./Results/' + all_models[1] + 'layer_gradient', bbox_inches='tight')
 
     plt.show()
 

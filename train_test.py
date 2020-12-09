@@ -71,6 +71,7 @@ def main():
     if args.gn:
         gradient_norm_hist = gradient_recorder.get_graidnet_norm_hist()
         gradient_norm_hist = np.array(gradient_norm_hist)/len(train_loader)
+        print(gradient_norm_hist)
     else:
         gradient_norm_hist = None
 
@@ -82,7 +83,7 @@ def main():
     #         os.makedirs(save_dir)
     #         break
 
-    if args.option == 'defalut':
+    if args.option == 'default':
         save_dir = './Results/' + args.arch
     else:
         save_dir = './Results/' + args.arch + '_' + args.option
@@ -90,6 +91,8 @@ def main():
         os.makedirs(save_dir)
 
     activation = evaluation.calcu_layer_responses(None, ResNet)
+    print(gradient_norm_hist)
+    print(type(gradient_norm_hist))
     torch.save({'state_dict': ResNet.state_dict(),
                 'train_hist': train_hist,
                 'gradient_hist': gradient_norm_hist,
