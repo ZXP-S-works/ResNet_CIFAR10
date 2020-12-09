@@ -95,11 +95,14 @@ def comp_res_net_option():
     fig, ax = plt.subplots(1)
     fig.suptitle('Learning curve')
     for option in all_options:
-        color = next(ax1._get_lines.prop_cycler)['color']
-        ax.plot(all_train_hist[option][1, :], label='option ' + option + ' train acc', linestyle='', color=color)
-        ax.plot(all_train_hist[option][3, :], label='option ' + option + ' test acc', linestyle=':', color=color)
+        color = next(ax._get_lines.prop_cycler)['color']
+        ax.plot(all_train_hist[option][1, :], label='option ' + option + ' train acc', linestyle='-', color=color)
+        ax.plot(all_train_hist[option][3, :], label='option ' + option + ' test acc', linestyle='-.', color=color)
     ax.set(ylabel='Top1 accuracy (%)')
     ax.set(xlabel='epochs')
+    ax.set_ylim(55, 95)
+    ax.legend(loc='lower right')
+    ax.grid(axis='y')
     plt.savefig('./Results/comp_res_net_option', bbox_inches='tight')
     plt.show()
 
@@ -118,45 +121,54 @@ def plot_layer_responses():
         all_activation.append([list1, list2])
 
     # Plots
-    fig, (ax1, ax2) = plt.subplots(2, sharex=True, gridspec_kw={'hspace': 0})
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=(10, 6))
     fig.suptitle('Layer Responses')
     for item in all_activation:
         color = next(ax1._get_lines.prop_cycler)['color']
-        ax1.plot(item[0, 1], label=item[0, 0], linestyle=':', color=color)
-        ax1.plot(item[1, 1], label=item[1, 0], linestyle='-', color=color)
+        ax1.plot(item[0][1], label=item[0][0], linestyle='-', color=color)
+        ax1.plot(item[1][1], label=item[1][0], linestyle=':', color=color)
     for item in all_activation:
         color = next(ax2._get_lines.prop_cycler)['color']
-        ax2.plot(item[0, 1].sort(), label=item[0, 0], linestyle=':', color=color)
-        ax2.plot(item[1, 1].sort(), label=item[1, 0], linestyle='-', color=color)
+        ax2.plot(sorted(item[0][1], reverse=True), label=item[0][0], linestyle='-', color=color)
+        ax2.plot(sorted(item[1][1], reverse=True), label=item[1][0], linestyle=':', color=color)
     ax1.set(ylabel='std')
-    ax1.set(xlabel='layers')
-    # ax1.set_ylim(55, 95)
-    ax1.legend(loc='lower right')
-    # ax1.grid(axis='y')
+    ax1.set(xlabel='layers (original)')
+    ax1.set_xlim(0, 150)
+    ax1.legend(loc='upper right')
     ax2.set(ylabel='std')
-    # ax2.set_ylim(55, 95)
-    ax2.legend(loc='lower right')
-    # ax2.grid(axis='y')
+    ax2.set(xlabel='layers (sorted)')
+    ax2.legend(loc='upper right')
     plt.savefig('./Results/layer_activation', bbox_inches='tight')
     plt.show()
 
 def plot_layer_gradient():
     # Loading
-    all_train_hist = {}
+    all_gradient_hist = {}
     all_models = ['resnet34', 'plain34']
     for models in all_models:
-        all_train_hist[option] = torch.load('./Results/' + str(models) + '/model.th')['gradient_hist']
+        all_gradient_hist[option] = torch.load('./Results/' + str(models) + '/model.th')['gradient_hist']
+
+    # to panda data frame
+    epochs = range(1, len(all_gradient_hist[all_models[0]])+1)
+    df1 = pd.DataFrame(list(zip(all_gradient_hist[all_models[0]], epochs)), columns=['Epoch', 'Gradient Norm'])
+    df2 = pd.DataFrame(list(zip(all_gradient_hist[all_models[1]], epochs)), columns=['Epoch', 'Gradient Norm'])
 
     # Plots
-    fig, ax = plt.subplots(1)
-    fig.suptitle('Learning curve')
-    for option in all_options:
-        color = next(ax1._get_lines.prop_cycler)['color']
-        ax.plot(all_train_hist[option][1, :], label='option ' + option + ' train acc', linestyle='', color=color)
-        ax.plot(all_train_hist[option][3, :], label='option ' + option + ' test acc', linestyle=':', color=color)
-    ax.set(ylabel='Top1 accuracy (%)')
-    ax.set(xlabel='epochs')
-    plt.savefig('./Results/comp_res_net_option', bbox_inches='tight')
+    fig1, axe1 = joypy.joyplot(df1, by="Epoch", column="Gradient Norm", figsize=(5, 8))
+    fig2, axe2 = joypy.joyplot(df2, by="Epoch", column="Gradient Norm", figsize=(5, 8))
+
+    # fig, ax = plt.subplots(1)
+    # fig.suptitle('Learning curve')
+    # for option in all_options:
+    #     color = next(ax1._get_lines.prop_cycler)['color']
+    #     ax.plot(all_train_hist[option][1, :], label='option ' + option + ' train acc', linestyle='', color=color)
+    #     ax.plot(all_train_hist[option][3, :], label='option ' + option + ' test acc', linestyle=':', color=color)
+    # ax.set(ylabel='Top1 accuracy (%)')
+    # ax.set(xlabel='epochs')
+
+    plt1.savefig('./Results/' + all_models[0] + 'layer_gradient', bbox_inches='tight')
+    plt2.savefig('./Results/' + all_models[1] + 'layer_gradient', bbox_inches='tight')
+
     plt.show()
 
 

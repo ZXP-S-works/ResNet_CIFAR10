@@ -23,7 +23,7 @@ parser.add_argument('--epochs', metavar='N', default=100, type=int,
                     help='number of epochs for training')
 parser.add_argument('--gn', '--gradient-norm', metavar='B', default=False, type=bool,
                     help='whether record gradient norm during train or not')
-parser.add_argument('--option', metavar='option', default='defalut', type=str, choices=['defalut', 'A', 'B', 'C', 'D'],
+parser.add_argument('--option', metavar='option', default='default', type=str, choices=['defalut', 'A', 'B', 'C', 'D'],
                     help='resudual block shotcut option')
 
 args = parser.parse_args()

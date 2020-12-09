@@ -130,17 +130,17 @@ def resnet146(option):
     return ResNets(BaseBlock, [24, 24, 24], option=option)
 
 
-def plain20():
+def plain20(option):
     return ResNets(BaseBlock, [3, 3, 3], option='plain')
 
 
-def plain34():
+def plain34(option):
     return ResNets(BaseBlock, [6, 6, 6], option='plain')
 
 
-def plain74():
+def plain74(option):
     return ResNets(BaseBlock, [12, 12, 12], option='plain')
 
 
-def plain146():
+def plain146(option):
     return ResNets(BaseBlock, [24, 24, 24], option='plain')
