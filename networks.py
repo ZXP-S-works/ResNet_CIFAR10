@@ -89,7 +89,8 @@ class BaseBlock(nn.Module):
                 self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False)
             elif self.option == 'D':  # increase tensor chennels by copy
                 self.shortcut = CustomLayer(lambda x:
-                                            x.repeat_interleave(repeats=int(out_channels/in_channels), dim=1))
+                                            x[:, :, ::stride, ::stride].
+                                            repeat_interleave(repeats=int(out_channels/in_channels), dim=1))
             elif self.option == 'plain':  # plain network
                 self.shortcut = None
             else:
@@ -98,7 +99,7 @@ class BaseBlock(nn.Module):
     def forward(self, x):
         out = self.relu1(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        if self.option != 'plain':  # option A, B
+        if self.option != 'plain':  # option A, B, C, D
             out += self.shortcut(x)
         out = self.relu2(out)
         return out
