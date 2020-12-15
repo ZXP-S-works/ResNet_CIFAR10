@@ -11,13 +11,13 @@ parser.add_argument('--bs', '--batch-size', metavar='N', default=128, type=int,
                     help='batch size for training')
 parser.add_argument('--workers', metavar='N', default=4, type=int,
                     help='number of workers in data loading')
-parser.add_argument('--lr', '--learning-rate', metavar='R', default=0.01, type=float,
+parser.add_argument('--lr', '--learning-rate', metavar='R', default=0.016, type=float,
                     help='learning rate for the SGD')
 parser.add_argument('--wd', '--weight-decay', metavar='R', default=1e-4, type=float,
                     help='L2 penalty for parameters regularization')
-parser.add_argument('--milestones', metavar='N', default=3, type=int,
+parser.add_argument('--milestones', metavar='N', default=4, type=int,
                     help='number of milestones, milestones will be evenly set')
-parser.add_argument('--lr-decay', metavar='R', default=0.1, type=float,
+parser.add_argument('--lr-decay', metavar='R', default=0.5, type=float,
                     help='decay on learning rate when a milestone is reached')
 parser.add_argument('--epochs', metavar='N', default=100, type=int,
                     help='number of epochs for training')
