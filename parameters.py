@@ -7,7 +7,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 parser = argparse.ArgumentParser(description='Training parameters for ResNet in CIFAR10')
 parser.add_argument('--arch', '--a', '--architecture', metavar='ARCH', default='resnet34',
                     help='model architecture')
-parser.add_argument('--bs', '--batch-size', metavar='N', default=256, type=int,
+parser.add_argument('--bs', '--batch-size', metavar='N', default=128, type=int,
                     help='batch size for training')
 parser.add_argument('--workers', metavar='N', default=4, type=int,
                     help='number of workers in data loading')

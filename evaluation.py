@@ -49,6 +49,5 @@ def calcu_layer_responses(directory, model):
             activation[item] /= len(test_loader)
 
         activation = dict(activation.items())
-        print(activation)
 
     return activation

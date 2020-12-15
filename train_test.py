@@ -20,7 +20,7 @@ import evaluation
 def main():
     # Initialize the network
     if args.option == 'default':
-        ResNet = networks.__dict__[args.arch]('A').to(device)
+        ResNet = networks.__dict__[args.arch]('D').to(device)
     else:
         ResNet = networks.__dict__[args.arch](args.option).to(device)
     print(ResNet)
@@ -28,9 +28,8 @@ def main():
 
     # Initialize train/test set
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet statistics
-    train_transform = transforms.Compose([transforms.RandomCrop(32, padding=4, padding_mode='edge'),
-                                          transforms.RandomHorizontalFlip(),
-                                          transforms.RandomRotation(15),
+    train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
+                                          transforms.RandomCrop(32, padding=4, padding_mode='edge'),
                                           transforms.ToTensor(),
                                           normalize])
     test_transform = transforms.Compose([transforms.ToTensor(),
@@ -71,7 +70,6 @@ def main():
     if args.gn:
         gradient_norm_hist = gradient_recorder.get_graidnet_norm_hist()
         gradient_norm_hist = np.array(gradient_norm_hist)/len(train_loader)
-        print(gradient_norm_hist)
     else:
         gradient_norm_hist = None
 
@@ -91,8 +89,6 @@ def main():
         os.makedirs(save_dir)
 
     activation = evaluation.calcu_layer_responses(None, ResNet)
-    print(gradient_norm_hist)
-    print(type(gradient_norm_hist))
     torch.save({'state_dict': ResNet.state_dict(),
                 'train_hist': train_hist,
                 'gradient_hist': gradient_norm_hist,
