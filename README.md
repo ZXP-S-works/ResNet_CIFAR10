@@ -25,8 +25,8 @@ chmode +x run.sh && ./run_all_res_plain_net.sh
 chmode +x run.sh && ./run_layer_gradient.sh
 ```
 
-![alt text](https://github.com/ZXP-S-works/ResNet_CIFAR10/blob/master/figure/plain34layer_gradient.png)
 ![alt text](https://github.com/ZXP-S-works/ResNet_CIFAR10/blob/master/figure/resnet34layer_gradient.png)
+![alt text](https://github.com/ZXP-S-works/ResNet_CIFAR10/blob/master/figure/plain34layer_gradient.png)
 
 ## Training all ResNet shortcut options
 ```
@@ -38,5 +38,9 @@ chmode +x run.sh && ./run_shortcut_options.sh
 Visualizations are included in python script visualization.py.
 
 ## Reference
-1. Deep Residual Learning for Image Recognition (https://arxiv.org/abs/1512.03385)
-2. Proper ResNet Implementation for CIFAR10/CIFAR100 in Pytorch (https://github.com/akamaster/pytorch_resnet_cifar10)
+1. Deep Residual Learning for Image Recognition
+   
+   (https://arxiv.org/abs/1512.03385)
+2. Proper ResNet Implementation for CIFAR10/CIFAR100 in Pytorch
+   
+    (https://github.com/akamaster/pytorch_resnet_cifar10)
