@@ -20,11 +20,13 @@ def visualization(directory):
     ax1.set(ylabel='Top1 accuracy (%)')
     ax1.legend(['Train acc', 'Test acc'], loc='lower right')
     ax1.grid()
+    ax1.set_ylim(50, 100)
     ax2.plot(train_hist[0, :])
     ax2.plot(train_hist[2, :])
     ax2.set(xlabel='Epochs', ylabel='Loss (NNL)')
     ax2.legend(['Train loss', 'Test loss'], loc='upper right')
     ax2.grid()
+    ax2.set_ylim(50, 100)
     plt.savefig(directory + '/learning_curve.png', bbox_inches='tight')
     # plt.show()
 

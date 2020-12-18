@@ -81,10 +81,10 @@ def main():
     #         os.makedirs(save_dir)
     #         break
 
-    if args.option == 'default':
+    if args.dir == 'default':
         save_dir = './Results/' + args.arch
     else:
-        save_dir = './Results/' + args.arch + '_' + args.option
+        save_dir = args.dir
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
